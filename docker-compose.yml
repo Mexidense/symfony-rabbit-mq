@@ -1,0 +1,52 @@
+version: '3.9'
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile-php
+    environment:
+      - MESSENGER_TRANSPORT_DSN=amqp://guest:guest@rabbitmq:5672/%2f/messages
+    volumes:
+      - ./app/:/var/www/app
+    networks:
+      - symfony
+
+  php-consume:
+    build:
+      context: .
+      dockerfile: Dockerfile-php-consume
+    environment:
+      - MESSENGER_TRANSPORT_DSN=amqp://guest:guest@rabbitmq:5672/%2f/messages
+    volumes:
+      - ./app/:/var/www/app
+    networks:
+      - symfony
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    volumes:
+      - ./app/:/var/www/app
+    ports:
+      - 6969:80
+    networks:
+      - symfony
+
+  rabbitmq:
+    build:
+      context: .
+      dockerfile: Dockerfile-rabbit-mq
+    ports:
+      - 15672:15672
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq:cache
+    networks:
+      - symfony
+
+volumes:
+  rabbitmq:
+
+networks:
+  symfony:
