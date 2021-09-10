@@ -1,0 +1,17 @@
+FROM php:fpm
+RUN apt update & apt install -y --no-install-recommends \
+    git \
+    zlib1g-dev \
+    libxml2-dev \
+    libzip-dev \
+    librabbitmq-dev \
+    && docker-php-ext-install \
+        zip \
+        intl \
+    && pecl install amqp \
+    && docker-php-ext-enable amqp
+
+RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
+COPY app/ /var/www/app
+WORKDIR /var/www/app/
+ENTRYPOINT ['bash', '/var/www/scripts/message-consume.sh']
